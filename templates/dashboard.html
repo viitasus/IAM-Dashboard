@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Billing Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 20px;
+        }
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 20px;
+            text-align: center;
+            height: 100%;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .stat-label {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .dashboard-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .active-status {
+            color: #28a745;
+        }
+        .hold-status {
+            color: #dc3545;
+        }
+        .completed-status {
+            color: #17a2b8;
+        }
+        .not-started-status {
+            color: #6c757d;
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e3e6f0;
+            font-weight: bold;
+        }
+        .color-primary {
+            color: #4e73df;
+        }
+        .color-success {
+            color: #1cc88a;
+        }
+        .color-warning {
+            color: #f6c23e;
+        }
+        .color-danger {
+            color: #e74a3b;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                Resource Billing Dashboard
+                <div class="small text-muted">{{ filename }}</div>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{{ url_for('resources', filename=filename) }}" class="btn btn-primary">
+                    <i class="bi bi-people"></i> View Resources
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">Upload Another File</a>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-4">
+                <div class="stat-card">
+                    <div class="stat-label">Total Allocated Days (2025)</div>
+                    <div class="stat-value color-primary">{{ data.total_allocated|round(1) }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-card">
+                    <div class="stat-label">Utilized Days (2025)</div>
+                    <div class="stat-value color-success">{{ data.total_utilized|round(1) }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-card">
+                    <div class="stat-label">Remaining Days (2025)</div>
+                    <div class="stat-value color-warning">{{ data.total_remaining|round(1) }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-card">
+                    <div class="stat-label">Utilization Rate</div>
+                    <div class="stat-value color-danger">{{ data.utilization_rate|round(1) }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <div id="resource_allocation_chart"></div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <div id="utilization_gauge"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <div id="billing_status_chart"></div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <div id="milestone_status_chart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 3 -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <div id="dept_billing_chart"></div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <div id="dept_util_chart"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Billing Status Details -->
+        {% if data.status_counts %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="chart-container">
+                    <div class="card-header">
+                        Billing Status Details
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set total = data.status_counts.values()|sum %}
+                                    {% for status, count in data.status_counts.items() %}
+                                    <tr>
+                                        <td>{{ status }}</td>
+                                        <td>{{ count }}</td>
+                                        <td>{{ (count / total * 100)|round(1) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Milestone Status Details -->
+        {% if data.milestone_counts %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="chart-container">
+                    <div class="card-header">
+                        Milestone Status Details
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set total = data.milestone_counts.values()|sum %}
+                                    {% for status, count in data.milestone_counts.items() %}
+                                    <tr>
+                                        <td>{{ status }}</td>
+                                        <td>{{ count }}</td>
+                                        <td>{{ (count / total * 100)|round(1) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Resource View Promotion -->
+        <div class="row mt-4 mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h4 class="card-title mb-3">Need to check individual resource assignments?</h4>
+                        <p class="card-text">View detailed information about resources and their project assignments.</p>
+                        <a href="{{ url_for('resources', filename=filename) }}" class="btn btn-primary">
+                            <i class="bi bi-people"></i> View Resource Assignments
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Render charts
+        {% if charts.resource_allocation_chart %}
+            Plotly.newPlot('resource_allocation_chart', {{ charts.resource_allocation_chart | safe }}.data, {{ charts.resource_allocation_chart | safe }}.layout);
+        {% endif %}
+        
+        {% if charts.utilization_gauge %}
+            Plotly.newPlot('utilization_gauge', {{ charts.utilization_gauge | safe }}.data, {{ charts.utilization_gauge | safe }}.layout);
+        {% endif %}
+        
+        {% if charts.billing_status_chart %}
+            Plotly.newPlot('billing_status_chart', {{ charts.billing_status_chart | safe }}.data, {{ charts.billing_status_chart | safe }}.layout);
+        {% endif %}
+        
+        {% if charts.milestone_status_chart %}
+            Plotly.newPlot('milestone_status_chart', {{ charts.milestone_status_chart | safe }}.data, {{ charts.milestone_status_chart | safe }}.layout);
+        {% endif %}
+        
+        {% if charts.dept_billing_chart %}
+            Plotly.newPlot('dept_billing_chart', {{ charts.dept_billing_chart | safe }}.data, {{ charts.dept_billing_chart | safe }}.layout);
+        {% endif %}
+        
+        {% if charts.dept_util_chart %}
+            Plotly.newPlot('dept_util_chart', {{ charts.dept_util_chart | safe }}.data, {{ charts.dept_util_chart | safe }}.layout);
+        {% endif %}
+    </script>
+</body>
+</html>

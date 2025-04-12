@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource List - Billing Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 20px;
+        }
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e3e6f0;
+            font-weight: bold;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .dashboard-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .resource-card {
+            cursor: pointer;
+        }
+        .resource-card:hover {
+            background-color: #f8f9fa;
+        }
+        .resource-utilization {
+            width: 100%;
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .utilization-bar {
+            height: 100%;
+            border-radius: 5px;
+        }
+        .department-section {
+            margin-bottom: 30px;
+        }
+        .department-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e3e6f0;
+        }
+        .badge {
+            font-weight: normal;
+            font-size: 0.8rem;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                Resource List
+                <div class="small text-muted">{{ filename }}</div>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{{ url_for('dashboard', filename=filename) }}" class="btn btn-outline-primary">
+                    <i class="bi bi-bar-chart-line"></i> Dashboard
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-upload"></i> Upload Another File
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="resourceSearch" class="form-control" placeholder="Search resources by name, role, department...">
+            </div>
+        </div>
+
+        <!-- Resource Stats -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Total Resources</h5>
+                        <h2 class="card-text">{{ data.total_resources }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Departments</h5>
+                        <h2 class="card-text">{{ data.resources_by_department|length if data.resources_by_department else 0 }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Average Utilization</h5>
+                        {% set total_util = 0 %}
+                        {% set count_util = 0 %}
+                        {% for resource in data.resources %}
+                            {% if resource.utilization_rate is defined %}
+                                {% set total_util = total_util + resource.utilization_rate %}
+                                {% set count_util = count_util + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {% set avg_util = (total_util / count_util)|round(1) if count_util > 0 else 0 %}
+                        <h2 class="card-text">{{ avg_util }}%</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resource List By Department -->
+        {% if data.resources_by_department %}
+            {% for dept, resources in data.resources_by_department.items() %}
+                <div class="department-section">
+                    <h2 class="department-title">{{ dept }} <span class="badge bg-secondary">{{ resources|length }} resources</span></h2>
+                    <div class="row row-cols-1 row-cols-md-3 g-4 resource-container">
+                        {% for resource_name in resources %}
+                            {% set resource = data.resources|selectattr('name', 'eq', resource_name)|first %}
+                            <div class="col resource-item" 
+                                data-name="{{ resource.name|lower }}" 
+                                data-role="{{ resource.role|lower if resource.role is defined else '' }}" 
+                                data-dept="{{ dept|lower }}">
+                                <div class="card h-100 resource-card" 
+                                     onclick="window.location.href='{{ url_for('resource_detail', filename=filename, resource_name=resource.name) }}'">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ resource.name }}</h5>
+                                        <p class="card-text text-muted">
+                                            <i class="bi bi-person-badge"></i> {{ resource.role if resource.role is defined else 'N/A' }}
+                                        </p>
+                                        <p class="card-text">
+                                            <i class="bi bi-briefcase"></i> {{ resource.projects|length }} project(s)
+                                        </p>
+                                        {% if resource.utilization_rate is defined %}
+                                            <div class="resource-utilization">
+                                                <div class="utilization-bar 
+                                                    {{ 'bg-danger' if resource.utilization_rate < 30 else 
+                                                       'bg-warning' if resource.utilization_rate < 70 else 
+                                                       'bg-success' }}" 
+                                                    style="width: {{ resource.utilization_rate }}%;">
+                                                </div>
+                                            </div>
+                                            <p class="text-end small mt-1 mb-0">{{ resource.utilization_rate|round(1) }}% utilized</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <small class="text-muted">Click for details</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <!-- Resource List (No Department Grouping) -->
+            <div class="row row-cols-1 row-cols-md-3 g-4 resource-container">
+                {% for resource in data.resources %}
+                    <div class="col resource-item" data-name="{{ resource.name|lower }}" 
+                         data-role="{{ resource.role|lower if resource.role is defined else '' }}" 
+                         data-dept="{{ resource.department|lower if resource.department is defined else '' }}">
+                        <div class="card h-100 resource-card" onclick="window.location.href='{{ url_for('resource_detail', filename=filename, resource_name=resource.name) }}'">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ resource.name }}</h5>
+                                {% if resource.department is defined %}
+                                    <p class="card-text">
+                                        <i class="bi bi-building"></i> {{ resource.department }}
+                                    </p>
+                                {% endif %}
+                                {% if resource.role is defined %}
+                                    <p class="card-text text-muted">
+                                        <i class="bi bi-person-badge"></i> {{ resource.role }}
+                                    </p>
+                                {% endif %}
+                                <p class="card-text">
+                                    <i class="bi bi-briefcase"></i> {{ resource.projects|length }} project(s)
+                                </p>
+                                {% if resource.utilization_rate is defined %}
+                                    <div class="resource-utilization">
+                                        <div class="utilization-bar 
+                                            {{ 'bg-danger' if resource.utilization_rate < 30 else 
+                                               'bg-warning' if resource.utilization_rate < 70 else 
+                                               'bg-success' }}" 
+                                            style="width: {{ resource.utilization_rate }}%;">
+                                        </div>
+                                    </div>
+                                    <p class="text-end small mt-1 mb-0">{{ resource.utilization_rate|round(1) }}% utilized</p>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <small class="text-muted">Click for details</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Search functionality
+        document.getElementById('resourceSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const resourceItems = document.querySelectorAll('.resource-item');
+            
+            resourceItems.forEach(item => {
+                const name = item.dataset.name;
+                const role = item.dataset.role;
+                const dept = item.dataset.dept;
+                
+                // Search in name, role, and department
+                if (name.includes(searchTerm) || role.includes(searchTerm) || dept.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Show/hide department sections if all resources are hidden
+            const departmentSections = document.querySelectorAll('.department-section');
+            departmentSections.forEach(section => {
+                const visibleResources = section.querySelectorAll('.resource-item[style=""]').length;
+                if (visibleResources === 0) {
+                    section.style.display = 'none';
+                } else {
+                    section.style.display = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
