@@ -27,6 +27,9 @@ def process_excel_data(file_path):
         
         # Process resource data (person-level data)
         data.update(process_resource_data(billed_df))
+        
+        # Process Zoho comparison data
+        data.update(process_zoho_data(billed_df))
     
     except Exception as e:
         print(f"Error processing Excel file: {e}")
@@ -52,6 +55,11 @@ def process_billing_data(df):
     status_col = next((col for col in df.columns if 'Status' in col and not ('Milestone' in col)), None)
     dept_col = next((col for col in df.columns if col.lower() in ['department', 'dept']), None)
     
+    # Find Zoho columns
+    zoho_hrs_col = next((col for col in df.columns if 'Zoho' in col and 'hrs' in col), None)
+    zoho_days_col = next((col for col in df.columns if 'Zoho' in col and 'days' in col and '2025' in col), None)
+    zoho_remaining_col = next((col for col in df.columns if 'Remaining' in col and 'Zoho' in col and '2025' in col), None)
+    
     # Summary metrics
     if allocated_col:
         result['total_allocated'] = df[allocated_col].sum() if pd.api.types.is_numeric_dtype(df[allocated_col]) else 0
@@ -60,11 +68,22 @@ def process_billing_data(df):
     if remaining_col:
         result['total_remaining'] = df[remaining_col].sum() if pd.api.types.is_numeric_dtype(df[remaining_col]) else 0
     
+    # Zoho metrics
+    if zoho_days_col:
+        result['total_zoho_utilized'] = df[zoho_days_col].sum() if pd.api.types.is_numeric_dtype(df[zoho_days_col]) else 0
+    if zoho_remaining_col:
+        result['total_zoho_remaining'] = df[zoho_remaining_col].sum() if pd.api.types.is_numeric_dtype(df[zoho_remaining_col]) else 0
+    
     # Calculate utilization rate
     if result.get('total_allocated', 0) > 0:
         result['utilization_rate'] = (result.get('total_utilized', 0) / result['total_allocated']) * 100
+        
+        # Also calculate Zoho utilization rate if available
+        if 'total_zoho_utilized' in result:
+            result['zoho_utilization_rate'] = (result['total_zoho_utilized'] / result['total_allocated']) * 100
     else:
         result['utilization_rate'] = 0
+        result['zoho_utilization_rate'] = 0 if 'total_zoho_utilized' in result else None
     
     # Billing status distribution
     if status_col:
@@ -159,6 +178,10 @@ def process_resource_data(df):
     utilized_col = next((col for col in df.columns 
                         if 'utilized' in col.lower() and '2025' in col.lower() and 'project plan' in col.lower()), None)
     
+    # Zoho columns
+    zoho_hrs_col = next((col for col in df.columns if 'Zoho' in col and 'hrs' in col), None)
+    zoho_days_col = next((col for col in df.columns if 'Zoho' in col and 'days' in col and '2025' in col), None)
+    
     # If we don't have the essential columns, return empty result
     if not resource_col or not project_col:
         return result
@@ -193,6 +216,14 @@ def process_resource_data(df):
                 person_data['utilization_rate'] = (person_data['total_utilized'] / person_data['total_allocated']) * 100
             else:
                 person_data['utilization_rate'] = 0
+                
+        # Add Zoho utilization if available
+        if zoho_days_col:
+            person_data['total_zoho_utilized'] = person_df[zoho_days_col].sum() if pd.api.types.is_numeric_dtype(person_df[zoho_days_col]) else 0
+            if person_data.get('total_allocated', 0) > 0:
+                person_data['zoho_utilization_rate'] = (person_data['total_zoho_utilized'] / person_data['total_allocated']) * 100
+            else:
+                person_data['zoho_utilization_rate'] = 0
         
         # Get all projects for this person
         for _, row in person_df.iterrows():
@@ -213,6 +244,14 @@ def process_resource_data(df):
                     project['project_utilization'] = (project['utilized'] / project['allocated']) * 100
                 else:
                     project['project_utilization'] = 0
+            
+            # Add Zoho data for this project
+            if zoho_days_col and pd.api.types.is_numeric_dtype(person_df[zoho_days_col]):
+                project['zoho_utilized'] = row[zoho_days_col]
+                if project.get('allocated', 0) > 0:
+                    project['zoho_utilization'] = (project['zoho_utilized'] / project['allocated']) * 100
+                else:
+                    project['zoho_utilization'] = 0
             
             person_data['projects'].append(project)
         
@@ -236,6 +275,53 @@ def process_resource_data(df):
             dept_resources[dept].append(person['name'])
         
         result['resources_by_department'] = dept_resources
+    
+    return result
+
+
+def process_zoho_data(df):
+    """Process Zoho utilization data for comparison with project plan data"""
+    result = {}
+    
+    if df.empty:
+        return result
+    
+    # Standardize column names
+    df.columns = [str(col).strip() for col in df.columns]
+    
+    # Find the relevant columns for project plan
+    pp_utilized_col = next((col for col in df.columns 
+                           if 'utilized' in col.lower() and '2025' in col.lower() and 'project plan' in col.lower()), None)
+    
+    # Find the relevant columns for Zoho
+    zoho_days_col = next((col for col in df.columns if 'Zoho' in col and 'days' in col and '2025' in col), None)
+    
+    # Find department column
+    dept_col = next((col for col in df.columns if col.lower() in ['department', 'dept']), None)
+    
+    # If we don't have both project plan and Zoho data, return empty result
+    if not pp_utilized_col or not zoho_days_col:
+        return result
+    
+    # Create comparison data by department if department column exists
+    if dept_col:
+        dept_pp = df.groupby(dept_col)[pp_utilized_col].sum().to_dict()
+        dept_zoho = df.groupby(dept_col)[zoho_days_col].sum().to_dict()
+        
+        # Combine data for chart
+        dept_comparison = []
+        for dept in set(list(dept_pp.keys()) + list(dept_zoho.keys())):
+            dept_comparison.append({
+                'department': dept,
+                'project_plan': dept_pp.get(dept, 0),
+                'zoho': dept_zoho.get(dept, 0)
+            })
+        
+        result['dept_comparison'] = dept_comparison
+    
+    # Create overall comparison data
+    result['total_pp_utilized'] = df[pp_utilized_col].sum() if pd.api.types.is_numeric_dtype(df[pp_utilized_col]) else 0
+    result['total_zoho_utilized'] = df[zoho_days_col].sum() if pd.api.types.is_numeric_dtype(df[zoho_days_col]) else 0
     
     return result
 
