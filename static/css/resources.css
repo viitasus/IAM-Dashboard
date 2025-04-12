@@ -88,8 +88,28 @@ body {
     font-size: 0.8rem;
 }
 
-.search-box {
+/* Controls container (search + sort) */
+.controls-container {
     margin-bottom: 20px;
+}
+
+.search-box {
+    margin-bottom: 15px;
+}
+
+.sort-controls {
+    margin-bottom: 15px;
+}
+
+.sort-controls .input-group-text {
+    background-color: #4e73df;
+    color: white;
+    border-color: #4e73df;
+}
+
+.sort-controls .form-select:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
 }
 
 /* Status colors */
@@ -129,6 +149,10 @@ body {
     
     .department-title {
         font-size: 1.2rem;
+    }
+    
+    .search-box, .sort-controls {
+        width: 100%;
     }
 }
 

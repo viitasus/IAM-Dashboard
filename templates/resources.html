@@ -25,11 +25,32 @@
             </div>
         </div>
 
-        <!-- Search Box -->
-        <div class="search-box">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" id="resourceSearch" class="form-control" placeholder="Search resources by name, role, department...">
+        <!-- Search and Sort Controls -->
+        <div class="controls-container mb-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="search-box">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="resourceSearch" class="form-control" placeholder="Search resources by name, role, department...">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="sort-controls">
+                        <div class="input-group">
+                            <label class="input-group-text" for="sortSelect"><i class="bi bi-sort-alpha-down"></i> Sort By</label>
+                            <select class="form-select" id="sortSelect">
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                                <option value="utilization-desc">Utilization (High-Low)</option>
+                                <option value="utilization-asc">Utilization (Low-High)</option>
+                                <option value="projects-desc">Projects (Most-Least)</option>
+                                <option value="projects-asc">Projects (Least-Most)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -81,7 +102,9 @@
                             <div class="col resource-item" 
                                  data-name="{{ resource.name|lower }}" 
                                  data-role="{{ resource.role|lower if resource.role is defined else '' }}" 
-                                 data-dept="{{ dept|lower }}">
+                                 data-dept="{{ dept|lower }}"
+                                 data-utilization="{{ resource.utilization_rate|default(0) }}"
+                                 data-projects="{{ resource.projects|length }}">
                                 <div class="card resource-card" 
                                      onclick="window.location.href='{{ url_for('resource_detail', filename=filename, resource_name=resource.name) }}'">
                                     <div class="card-body">
@@ -120,7 +143,9 @@
                     <div class="col resource-item" 
                          data-name="{{ resource.name|lower }}" 
                          data-role="{{ resource.role|lower if resource.role is defined else '' }}" 
-                         data-dept="{{ resource.department|lower if resource.department is defined else '' }}">
+                         data-dept="{{ resource.department|lower if resource.department is defined else '' }}"
+                         data-utilization="{{ resource.utilization_rate|default(0) }}"
+                         data-projects="{{ resource.projects|length }}">
                         <div class="card resource-card" 
                              onclick="window.location.href='{{ url_for('resource_detail', filename=filename, resource_name=resource.name) }}'">
                             <div class="card-body">
