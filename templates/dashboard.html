@@ -6,87 +6,8 @@
     <title>Resource Billing Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding-top: 20px;
-        }
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .chart-container {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            padding: 15px;
-        }
-        .stat-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            padding: 20px;
-            text-align: center;
-            height: 100%;
-        }
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        .stat-label {
-            color: #6c757d;
-            font-size: 1rem;
-        }
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        .dashboard-title {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-        }
-        .dashboard-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .active-status {
-            color: #28a745;
-        }
-        .hold-status {
-            color: #dc3545;
-        }
-        .completed-status {
-            color: #17a2b8;
-        }
-        .not-started-status {
-            color: #6c757d;
-        }
-        .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #e3e6f0;
-            font-weight: bold;
-        }
-        .color-primary {
-            color: #4e73df;
-        }
-        .color-success {
-            color: #1cc88a;
-        }
-        .color-warning {
-            color: #f6c23e;
-        }
-        .color-danger {
-            color: #e74a3b;
-        }
-    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -261,31 +182,17 @@
         </div>
     </div>
 
+    <!-- Pass chart data to JavaScript -->
     <script>
-        // Render charts
-        {% if charts.resource_allocation_chart %}
-            Plotly.newPlot('resource_allocation_chart', {{ charts.resource_allocation_chart | safe }}.data, {{ charts.resource_allocation_chart | safe }}.layout);
-        {% endif %}
-        
-        {% if charts.utilization_gauge %}
-            Plotly.newPlot('utilization_gauge', {{ charts.utilization_gauge | safe }}.data, {{ charts.utilization_gauge | safe }}.layout);
-        {% endif %}
-        
-        {% if charts.billing_status_chart %}
-            Plotly.newPlot('billing_status_chart', {{ charts.billing_status_chart | safe }}.data, {{ charts.billing_status_chart | safe }}.layout);
-        {% endif %}
-        
-        {% if charts.milestone_status_chart %}
-            Plotly.newPlot('milestone_status_chart', {{ charts.milestone_status_chart | safe }}.data, {{ charts.milestone_status_chart | safe }}.layout);
-        {% endif %}
-        
-        {% if charts.dept_billing_chart %}
-            Plotly.newPlot('dept_billing_chart', {{ charts.dept_billing_chart | safe }}.data, {{ charts.dept_billing_chart | safe }}.layout);
-        {% endif %}
-        
-        {% if charts.dept_util_chart %}
-            Plotly.newPlot('dept_util_chart', {{ charts.dept_util_chart | safe }}.data, {{ charts.dept_util_chart | safe }}.layout);
-        {% endif %}
+        const chartData = {
+            resource_allocation_chart: {{ charts.resource_allocation_chart | safe if charts.resource_allocation_chart else 'null' }},
+            utilization_gauge: {{ charts.utilization_gauge | safe if charts.utilization_gauge else 'null' }},
+            billing_status_chart: {{ charts.billing_status_chart | safe if charts.billing_status_chart else 'null' }},
+            milestone_status_chart: {{ charts.milestone_status_chart | safe if charts.milestone_status_chart else 'null' }},
+            dept_billing_chart: {{ charts.dept_billing_chart | safe if charts.dept_billing_chart else 'null' }},
+            dept_util_chart: {{ charts.dept_util_chart | safe if charts.dept_util_chart else 'null' }}
+        };
     </script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>

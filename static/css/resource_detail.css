@@ -1,0 +1,187 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding-top: 20px;
+}
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e3e6f0;
+    font-weight: bold;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.dashboard-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.dashboard-subtitle {
+    color: #6c757d;
+    font-size: 1.2rem;
+    margin-top: 5px;
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.project-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.utilization-container {
+    height: 30px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 15px 0;
+}
+
+.utilization-bar {
+    height: 100%;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    padding-top: 5px;
+}
+
+.stats-card {
+    text-align: center;
+    padding: 15px;
+}
+
+.stats-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.stats-label {
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+.badge-custom {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.project-table th {
+    background-color: #f8f9fa;
+}
+
+.chart-container {
+    height: 300px;
+    width: 100%;
+}
+
+/* Status colors */
+.bg-danger {
+    background-color: #e74a3b !important;
+}
+
+.bg-warning {
+    background-color: #f6c23e !important;
+}
+
+.bg-success {
+    background-color: #1cc88a !important;
+}
+
+.text-danger {
+    color: #e74a3b !important;
+}
+
+.text-warning {
+    color: #f6c23e !important;
+}
+
+.text-success {
+    color: #1cc88a !important;
+}
+
+/* Responsive styles */
+@media (max-width: 991px) {
+    .chart-container {
+        height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+    }
+    
+    .dashboard-title {
+        font-size: 1.5rem;
+    }
+    
+    .dashboard-subtitle {
+        font-size: 1rem;
+    }
+    
+    .stats-value {
+        font-size: 1.5rem;
+    }
+    
+    .chart-container {
+        height: 350px;
+    }
+    
+    .project-table {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-container {
+        padding: 10px;
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+    
+    .stats-label {
+        font-size: 0.9rem;
+    }
+    
+    .utilization-container {
+        height: 25px;
+    }
+    
+    .utilization-bar {
+        padding-top: 3px;
+        font-size: 0.9rem;
+    }
+}

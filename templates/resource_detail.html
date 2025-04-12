@@ -6,94 +6,8 @@
     <title>{{ resource.name }} - Resource Details</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/resource_detail.css') }}">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding-top: 20px;
-        }
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .card {
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #e3e6f0;
-            font-weight: bold;
-        }
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        .dashboard-title {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-        }
-        .dashboard-subtitle {
-            color: #6c757d;
-            font-size: 1.2rem;
-            margin-top: 5px;
-        }
-        .dashboard-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .project-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .utilization-container {
-            height: 30px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            overflow: hidden;
-            margin: 15px 0;
-        }
-        .utilization-bar {
-            height: 100%;
-            text-align: center;
-            color: white;
-            font-weight: bold;
-            padding-top: 5px;
-        }
-        .stats-card {
-            text-align: center;
-            padding: 15px;
-        }
-        .stats-value {
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        .stats-label {
-            color: #6c757d;
-            font-size: 1rem;
-        }
-        .badge-custom {
-            font-size: 0.8rem;
-            padding: 5px 10px;
-            border-radius: 10px;
-        }
-        .project-table th {
-            background-color: #f8f9fa;
-        }
-        .chart-container {
-            height: 300px;
-        }
-    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -123,19 +37,19 @@
 
         <!-- Resource Stats Overview -->
         <div class="row mb-4">
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-4 mb-3">
                 <div class="card stats-card">
                     <div class="stats-label">Total Projects</div>
                     <div class="stats-value">{{ resource.projects|length }}</div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-4 mb-3">
                 <div class="card stats-card">
                     <div class="stats-label">Allocated Days (2025)</div>
                     <div class="stats-value">{{ resource.total_allocated|default(0)|round(1) }}</div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-4 mb-3">
                 <div class="card stats-card">
                     <div class="stats-label">Utilized Days (2025)</div>
                     <div class="stats-value">{{ resource.total_utilized|default(0)|round(1) }}</div>
@@ -155,18 +69,18 @@
                         {{ 'bg-danger' if resource.utilization_rate < 30 else 
                            'bg-warning' if resource.utilization_rate < 70 else 
                            'bg-success' }}" 
-                        style="width: {{ resource.utilization_rate }}%;">
+                        style="width: {{ resource.utilization_rate|string }}%">
                         {{ resource.utilization_rate|round(1) }}%
                     </div>
                 </div>
                 <div class="row text-center">
-                    <div class="col-md-4">
+                    <div class="col-md-4 col-4">
                         <div class="text-danger">Under-utilized (< 30%)</div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4 col-4">
                         <div class="text-warning">Moderate (30-70%)</div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4 col-4">
                         <div class="text-success">Optimal (> 70%)</div>
                     </div>
                 </div>
@@ -176,8 +90,8 @@
 
         <!-- Project Charts -->
         <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
                     <div class="card-header">
                         Project Allocation Distribution
                     </div>
@@ -186,8 +100,8 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
                     <div class="card-header">
                         Project Utilization Comparison
                     </div>
@@ -243,7 +157,7 @@
                                                    'bg-warning' if project.project_utilization < 70 else 
                                                    'bg-success' }}" 
                                                 role="progressbar" 
-                                                style="width: {{ project.project_utilization }}%;" 
+                                                style="width: {{ project.project_utilization|string }}%" 
                                                 aria-valuenow="{{ project.project_utilization }}" 
                                                 aria-valuemin="0" 
                                                 aria-valuemax="100">
@@ -261,45 +175,21 @@
                 </div>
             </div>
         </div>
+        
+        <!-- No projects message -->
+        {% if resource.projects|length == 0 %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> This resource has no assigned projects.
+        </div>
+        {% endif %}
     </div>
 
     <script>
-        // Create the charts
-        document.addEventListener('DOMContentLoaded', function() {
-            // Allocation pie chart
-            const pieData = [
+        // Prepare chart data for JavaScript
+        const chartData = {
+            projects: [
                 {% for project in resource.projects %}
-                    {% if project.allocated is defined %}
-                    {
-                        name: "{{ project.name }}",
-                        value: {{ project.allocated|default(0) }}
-                    },
-                    {% endif %}
-                {% endfor %}
-            ];
-            
-            // Skip creating the chart if no allocation data
-            if (pieData.length > 0) {
-                const pieLayout = {
-                    margin: { t: 10, b: 10, l: 10, r: 10 },
-                    showlegend: true,
-                    legend: { orientation: 'h', y: -0.2 }
-                };
-                
-                Plotly.newPlot('allocation_pie_chart', [{
-                    type: 'pie',
-                    labels: pieData.map(p => p.name),
-                    values: pieData.map(p => p.value),
-                    hole: 0.4,
-                    textinfo: 'label+percent',
-                    insidetextorientation: 'radial'
-                }], pieLayout);
-            }
-            
-            // Utilization bar chart
-            const barData = [
-                {% for project in resource.projects %}
-                    {% if project.allocated is defined and project.utilized is defined %}
+                    {% if project.allocated is defined or project.utilized is defined %}
                     {
                         name: "{{ project.name }}",
                         allocated: {{ project.allocated|default(0) }},
@@ -307,40 +197,9 @@
                     },
                     {% endif %}
                 {% endfor %}
-            ];
-            
-            // Skip creating the chart if no utilization data
-            if (barData.length > 0) {
-                const barLayout = {
-                    margin: { t: 10, b: 80, l: 60, r: 10 },
-                    showlegend: true,
-                    barmode: 'group',
-                    xaxis: {
-                        tickangle: -45,
-                        automargin: true
-                    },
-                    yaxis: {
-                        title: 'Days'
-                    },
-                    legend: { orientation: 'h', y: -0.2 }
-                };
-                
-                Plotly.newPlot('utilization_bar_chart', [
-                    {
-                        x: barData.map(p => p.name),
-                        y: barData.map(p => p.allocated),
-                        type: 'bar',
-                        name: 'Allocated'
-                    },
-                    {
-                        x: barData.map(p => p.name),
-                        y: barData.map(p => p.utilized),
-                        type: 'bar',
-                        name: 'Utilized'
-                    }
-                ], barLayout);
-            }
-        });
+            ]
+        };
     </script>
+    <script src="{{ url_for('static', filename='js/resource_detail.js') }}"></script>
 </body>
 </html>

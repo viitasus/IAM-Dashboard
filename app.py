@@ -103,13 +103,17 @@ def resources(filename):
         
         # Check if resources data is available
         if 'resources' not in data:
-            flash('No resource data available in the file', 'error')
+            flash('No resource data available in the file', 'warning')
             return redirect(url_for('dashboard', filename=filename))
         
         # Render resources template with data
         return render_template('resources.html', data=data, filename=filename)
         
     except Exception as e:
+        # Add debugging output to see what's going wrong
+        import traceback
+        print(f"Error in resources view: {str(e)}")
+        print(traceback.format_exc())
         flash(f'Error retrieving resource data: {str(e)}', 'error')
         return redirect(url_for('dashboard', filename=filename))
 
