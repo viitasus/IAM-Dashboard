@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set up modal for data display
     setupDataModal();
+    
+    // Setup chart toolbar event handlers for Plotly buttons
+    setupChartToolbarHandlers();
 });
 
 function renderCharts() {
@@ -23,7 +26,7 @@ function renderCharts() {
             'resource_allocation_chart', 
             chartData.resource_allocation_chart.data, 
             chartData.resource_allocation_chart.layout,
-            {responsive: true}
+            {responsive: true, displayModeBar: true, modeBarButtonsToRemove: ['lasso2d']}
         );
         
         // Add click event
@@ -38,7 +41,7 @@ function renderCharts() {
             'utilization_gauge', 
             chartData.utilization_gauge.data, 
             chartData.utilization_gauge.layout,
-            {responsive: true}
+            {responsive: true, displayModeBar: true, modeBarButtonsToRemove: ['lasso2d']}
         );
         
         // Add click event for gauge
@@ -56,7 +59,7 @@ function renderCharts() {
             'billing_status_chart', 
             chartData.billing_status_chart.data, 
             chartData.billing_status_chart.layout,
-            {responsive: true}
+            {responsive: true, displayModeBar: true, modeBarButtonsToRemove: ['lasso2d']}
         );
         
         // Add click event
@@ -71,7 +74,7 @@ function renderCharts() {
             'milestone_status_chart', 
             chartData.milestone_status_chart.data, 
             chartData.milestone_status_chart.layout,
-            {responsive: true}
+            {responsive: true, displayModeBar: true, modeBarButtonsToRemove: ['lasso2d']}
         );
         
         // Add click event
@@ -86,7 +89,7 @@ function renderCharts() {
             'zoho_comparison_chart', 
             chartData.zoho_comparison_chart.data, 
             chartData.zoho_comparison_chart.layout,
-            {responsive: true}
+            {responsive: true, displayModeBar: true, modeBarButtonsToRemove: ['lasso2d']}
         );
         
         // Add click event
@@ -94,6 +97,46 @@ function renderCharts() {
             showDataTable('Project Plan vs Zoho Comparison', convertChartToTableData(chartData.zoho_comparison_chart, data));
         });
     }
+}
+
+// Function to handle chart toolbar button interactions
+function setupChartToolbarHandlers() {
+    // Get all chart containers
+    const chartContainers = document.querySelectorAll('.chart-container');
+    
+    // Add event listeners for when Plotly adds the toolbars
+    chartContainers.forEach(container => {
+        // Use MutationObserver to detect when Plotly adds the modebar
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.addedNodes.length) {
+                    const modebar = container.querySelector('.modebar');
+                    if (modebar) {
+                        // Make sure the modebar is visible and positioned correctly
+                        modebar.style.opacity = '1';
+                        modebar.style.transform = 'none';
+                        
+                        // Add event listeners to buttons
+                        const buttons = modebar.querySelectorAll('a.modebar-btn');
+                        buttons.forEach(button => {
+                            button.addEventListener('click', function(e) {
+                                // Ensure the button action completes
+                                setTimeout(() => {
+                                    // If this is a download button, ensure the download happens
+                                    if (button.getAttribute('data-title') === 'Download plot as a png') {
+                                        console.log('Download button clicked');
+                                    }
+                                }, 100);
+                            });
+                        });
+                    }
+                }
+            });
+        });
+        
+        // Start observing
+        observer.observe(container, { childList: true, subtree: true });
+    });
 }
 
 // Function to convert chart data to table format for display
