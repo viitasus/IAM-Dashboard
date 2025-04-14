@@ -155,14 +155,18 @@ def create_resource_allocation_chart(data):
     # Define colors with better contrast
     bar_colors = ['#4e73df', '#1cc88a', '#f6c23e']  # Blue, Green, Yellow
     
+    # Get values for better annotation positioning
+    allocated = data.get('total_allocated', 0)
+    utilized = data.get('total_utilized', 0)
+    remaining = data.get('total_remaining', 0)
+    max_value = max(allocated, utilized, remaining)
+    
     # Add bars with improved styling
     fig.add_trace(go.Bar(
         x=['Allocated', 'Utilized', 'Remaining'],
-        y=[data.get('total_allocated', 0), data.get('total_utilized', 0), data.get('total_remaining', 0)],
+        y=[allocated, utilized, remaining],
         marker_color=bar_colors,
-        text=[f"{data.get('total_allocated', 0):.1f}", 
-              f"{data.get('total_utilized', 0):.1f}", 
-              f"{data.get('total_remaining', 0):.1f}"],
+        text=[f"{allocated:.1f}", f"{utilized:.1f}", f"{remaining:.1f}"],
         textposition='outside',
         hovertemplate='%{x}: %{y:.1f} days<extra></extra>',
         width=[0.6, 0.6, 0.6]  # Slightly thinner bars
@@ -194,35 +198,34 @@ def create_resource_allocation_chart(data):
         )
     )
     
-    # Add annotations explaining each category
+    # Add annotations with improved positioning
     annotations = [
         dict(
             x="Allocated", 
-            y=data.get('total_allocated', 0) + (data.get('total_allocated', 0) * 0.05),
+            y=allocated / 2,  # Position in the middle of the bar
             text="Total days allocated<br>for all resources",
             showarrow=False,
-            font=dict(size=12)
+            font=dict(size=12, color="white")
         ),
         dict(
             x="Utilized", 
-            y=data.get('total_utilized', 0) + (data.get('total_utilized', 0) * 0.05),
+            y=utilized / 2,  # Position in the middle of the bar
             text="Days utilized according<br>to project plan",
             showarrow=False,
-            font=dict(size=12)
+            font=dict(size=12, color="white")
         ),
         dict(
             x="Remaining", 
-            y=data.get('total_remaining', 0) + (data.get('total_remaining', 0) * 0.05),
+            y=remaining / 2,  # Position in the middle of the bar
             text="Days remaining<br>to be utilized",
             showarrow=False,
-            font=dict(size=12)
+            font=dict(size=12, color="white")
         )
     ]
     
     fig.update_layout(annotations=annotations)
     
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
 
 def create_utilization_gauge(data):
     """Create gauge chart for resource utilization rate"""
