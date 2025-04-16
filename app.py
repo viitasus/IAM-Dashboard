@@ -210,8 +210,8 @@ def server_error(e):
     """Handle 500 errors"""
     return render_template('index.html', error="Server error occurred"), 500
 
-#if __name__ == '__main__':
-#    app.run
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run
+
+#if __name__ == '__main__':
+#    app.run(debug=True)
