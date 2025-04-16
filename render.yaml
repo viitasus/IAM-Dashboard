@@ -1,0 +1,16 @@
+# Exported from Render on 2025-04-16T05:11:46Z
+services:
+- type: web
+  name: IAM-Dashboard
+  runtime: python
+  repo: https://github.com/viitasus/IAM-Dashboard
+  plan: free
+  region: oregon
+  buildCommand: pip install -r req.txt
+  startCommand: gunicorn app:app
+  buildFilter:
+    paths:
+    - IAM-Dashboard
+  previews:
+    generation: automatic
+version: "1"
