@@ -6,22 +6,43 @@
     <title>Resource List - Billing Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/resources.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
 </head>
 <body>
     <div class="dashboard-container">
         <div class="dashboard-header">
-            <div class="dashboard-title">
-                Resource List
-                <div class="small text-muted">{{ filename }}</div>
+            <div class="d-flex align-items-center">
+                <div class="logo-container">
+                    <img src="{{ url_for('static', filename='images/rns-logo.png') }}" alt="RNS Technology Services" height="60">
+                </div>
+                <div class="dashboard-title">
+                    Resource List
+                    <div class="small text-muted">{{ filename }}</div>
+                </div>
             </div>
             <div class="dashboard-actions">
                 <a href="{{ url_for('dashboard', filename=filename) }}" class="btn btn-outline-primary">
                     <i class="bi bi-bar-chart-line"></i> Dashboard
                 </a>
-                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
                     <i class="bi bi-upload"></i> Upload Another File
                 </a>
+                <a href="#" class="btn btn-outline-primary">
+                    <i class="bi bi-printer"></i> Print List
+                </a>
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider">
+                            <i class="bi bi-sun-fill slider-icon sun-icon"></i>
+                            <i class="bi bi-moon-fill slider-icon moon-icon"></i>
+                        </span>
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -57,24 +78,27 @@
         <!-- Resource Stats -->
         <div class="row mb-4">
             <div class="col-md-4 col-sm-6 mb-3">
-                <div class="card h-100">
+                <div class="card h-100 stat-card">
                     <div class="card-body text-center">
+                        <i class="bi bi-people mb-2" style="font-size: 1.8rem;"></i>
                         <h5 class="card-title">Total Resources</h5>
                         <h2 class="card-text">{{ data.total_resources }}</h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 col-sm-6 mb-3">
-                <div class="card h-100">
+                <div class="card h-100 stat-card">
                     <div class="card-body text-center">
+                        <i class="bi bi-building mb-2" style="font-size: 1.8rem;"></i>
                         <h5 class="card-title">Departments</h5>
                         <h2 class="card-text">{{ data.resources_by_department|length if data.resources_by_department else 0 }}</h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 col-sm-12 mb-3">
-                <div class="card h-100">
+                <div class="card h-100 stat-card">
                     <div class="card-body text-center">
+                        <i class="bi bi-graph-up mb-2" style="font-size: 1.8rem;"></i>
                         <h5 class="card-title">Average Utilization</h5>
                         {% set total_util = 0 %}
                         {% set count_util = 0 %}
@@ -193,5 +217,6 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/resources.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </body>
 </html>

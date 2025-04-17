@@ -5,9 +5,12 @@ Main application entry point
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import os
 import json
+import traceback
 from werkzeug.utils import secure_filename
 from utils.data_processor import process_excel_data
 from utils.chart_generator import create_charts
+from werkzeug.exceptions import HTTPException
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -198,17 +201,42 @@ def delete_file(filename):
     
     return redirect(url_for('index'))
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Handle all uncaught exceptions"""
+    # Log the error and stacktrace
+    print(f"Unhandled Exception: {str(e)}")
+    traceback.print_exception(*sys.exc_info())
+    
+    # Flash an error message to the user
+    flash(f'An unexpected error occurred: {str(e)}', 'error')
+    
+    # Redirect to the index page
+    return redirect(url_for('index'))
+
+@app.errorhandler(HTTPException)
+def handle_http_exception(e):
+    """Handle HTTP exceptions (like 404, 403, etc.)"""
+    # Log the error
+    print(f"HTTP Exception: {e.code} - {e.name}: {e.description}")
+    
+    # Flash an appropriate message
+    flash(f'Error {e.code}: {e.name}', 'error')
+    
+    # Redirect to the index page
+    return redirect(url_for('index'))
 
 @app.errorhandler(404)
 def page_not_found(e):
     """Handle 404 errors"""
-    return render_template('index.html', error="Page not found"), 404
-
+    flash('Page not found', 'error')
+    return redirect(url_for('index'))
 
 @app.errorhandler(500)
 def server_error(e):
     """Handle 500 errors"""
-    return render_template('index.html', error="Server error occurred"), 500
+    flash('A server error occurred', 'error')
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run

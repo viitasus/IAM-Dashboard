@@ -152,14 +152,13 @@ def create_resource_allocation_chart(data):
     
     fig = go.Figure()
     
-    # Define colors with better contrast
-    bar_colors = ['#4e73df', '#1cc88a', '#f6c23e']  # Blue, Green, Yellow
-    
     # Get values for better annotation positioning
     allocated = data.get('total_allocated', 0)
     utilized = data.get('total_utilized', 0)
     remaining = data.get('total_remaining', 0)
-    max_value = max(allocated, utilized, remaining)
+    
+    # Define colors with better contrast
+    bar_colors = ['#8b1d1d', '#28a745', '#f6c23e']  # RNS primary, success, warning
     
     # Add bars with improved styling
     fig.add_trace(go.Bar(
@@ -173,16 +172,9 @@ def create_resource_allocation_chart(data):
     ))
     
     fig.update_layout(
-        title={
-            'text': "<b>Resource Allocation (2025)</b>",
-            'y': 0.95,
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top',
-            'font': {'size': 18}
-        },
-        margin=dict(t=70, b=60, l=80, r=40),
-        height=450,  # Increased height
+        # Remove the title from the layout
+        margin=dict(t=20, b=60, l=80, r=40),  # Reduced top margin since no title
+        height=450,
         yaxis_title="Days",
         plot_bgcolor='rgb(248,249,250)',
         paper_bgcolor='rgb(248,249,250)',
@@ -292,228 +284,15 @@ def create_utilization_gauge(data):
     ]
     
     fig.update_layout(
-        margin=dict(t=70, b=50, l=40, r=40),
-        height=450,  # Increased height
+        # Remove the title from the layout
+        margin=dict(t=30, b=50, l=40, r=40),  # Reduced top margin
+        height=450,
         plot_bgcolor='rgb(248,249,250)',
         paper_bgcolor='rgb(248,249,250)',
-        title={
-            'text': "<b>Project Plan Utilization Rate</b>",
-            'y': 0.95,
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top',
-            'font': {'size': 18}
-        },
         annotations=annotations
     )
     
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
-
-def create_zoho_comparison_chart(data):
-    """Create comparison chart between Project Plan and Zoho utilization"""
-    # Check if we have both project plan and Zoho utilization data
-    if 'total_utilized' not in data or 'total_zoho_utilized' not in data:
-        return None
-    
-    # Create figure with subplots - one for overall, one for departments
-    if 'dept_comparison' in data and data['dept_comparison']:
-        # Get unique department names
-        dept_data = data['dept_comparison']
-        # Sort departments by project plan utilization
-        dept_data.sort(key=lambda x: x['project_plan'], reverse=True)
-        
-        # Create a horizontal bar chart for better readability
-        fig = go.Figure()
-        
-        # Add department data
-        dept_names = [dept['department'] for dept in dept_data]
-        
-        # Add Project Plan bars
-        fig.add_trace(go.Bar(
-            y=dept_names,
-            x=[dept['project_plan'] for dept in dept_data],
-            name='Project Plan',
-            marker_color='#4e73df',  # Strong blue
-            text=[f"{dept['project_plan']:.1f}" for dept in dept_data],
-            textposition='auto',
-            orientation='h',
-            hovertemplate='Department: %{y}<br>Project Plan: %{x:.1f} days<extra></extra>'
-        ))
-        
-        # Add Zoho bars
-        fig.add_trace(go.Bar(
-            y=dept_names,
-            x=[dept['zoho'] for dept in dept_data],
-            name='Zoho',
-            marker_color='#1cc88a',  # Strong green
-            text=[f"{dept['zoho']:.1f}" for dept in dept_data],
-            textposition='auto',
-            orientation='h',
-            hovertemplate='Department: %{y}<br>Zoho: %{x:.1f} days<extra></extra>'
-        ))
-        
-        # Add an "Overall" category at the top
-        fig.add_trace(go.Bar(
-            y=['Overall'],
-            x=[data.get('total_utilized', 0)],
-            name='Project Plan',
-            marker_color='#4e73df',
-            text=[f"{data.get('total_utilized', 0):.1f}"],
-            textposition='auto',
-            orientation='h',
-            showlegend=False,
-            hovertemplate='Overall Project Plan: %{x:.1f} days<extra></extra>'
-        ))
-        
-        fig.add_trace(go.Bar(
-            y=['Overall'],
-            x=[data.get('total_zoho_utilized', 0)],
-            name='Zoho',
-            marker_color='#1cc88a',
-            text=[f"{data.get('total_zoho_utilized', 0):.1f}"],
-            textposition='auto',
-            orientation='h',
-            showlegend=False,
-            hovertemplate='Overall Zoho: %{x:.1f} days<extra></extra>'
-        ))
-        
-        # Update layout for a horizontal bar chart
-        fig.update_layout(
-            title={
-                'text': "<b>Project Plan vs Zoho Utilization (2025)</b>",
-                'y': 0.98,
-                'x': 0.5,
-                'xanchor': 'center',
-                'yanchor': 'top',
-                'font': {'size': 18}
-            },
-            xaxis_title="Days",
-            barmode='group',
-            margin=dict(t=70, b=50, l=180, r=40),  # Increased left margin for labels
-            height=500,  # Taller chart to accommodate all departments
-            plot_bgcolor='rgb(248,249,250)',
-            paper_bgcolor='rgb(248,249,250)',
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="center",
-                x=0.5,
-                font=dict(size=14)
-            ),
-            xaxis=dict(
-                title_font=dict(size=14),
-                tickfont=dict(size=12),
-                gridcolor='rgba(0,0,0,0.1)'
-            ),
-            yaxis=dict(
-                tickfont=dict(size=14)
-            )
-        )
-        
-        # Add a separator line between Overall and departments
-        fig.add_shape(
-            type="line",
-            x0=0,
-            y0=0.5,
-            x1=max(data.get('total_utilized', 0), data.get('total_zoho_utilized', 0)) * 1.1,
-            y1=0.5,
-            line=dict(
-                color="rgba(0,0,0,0.3)",
-                width=1,
-                dash="dash",
-            )
-        )
-        
-        # Add annotations explaining the comparison
-        fig.add_annotation(
-            x=max(data.get('total_utilized', 0), data.get('total_zoho_utilized', 0)) * 0.5,
-            y=-0.5,
-            text="<b>Project Plan</b>: Days utilized according to internal project planning<br><b>Zoho</b>: Days utilized according to Zoho time tracking",
-            showarrow=False,
-            font=dict(size=12),
-            align="center",
-            xanchor="center",
-            yanchor="top"
-        )
-        
-    else:
-        # If no department data, create a simpler bar chart
-        fig = go.Figure()
-        
-        # Add bars for overall comparison with better styling
-        fig.add_trace(go.Bar(
-            x=['Overall Utilization'],
-            y=[data.get('total_utilized', 0)],
-            name='Project Plan',
-            marker_color='#4e73df',
-            text=[f"{data.get('total_utilized', 0):.1f}"],
-            textposition='outside',
-            width=[0.3],
-            hovertemplate='Project Plan: %{y:.1f} days<extra></extra>'
-        ))
-        
-        fig.add_trace(go.Bar(
-            x=['Overall Utilization'],
-            y=[data.get('total_zoho_utilized', 0)],
-            name='Zoho',
-            marker_color='#1cc88a',
-            text=[f"{data.get('total_zoho_utilized', 0):.1f}"],
-            textposition='outside',
-            width=[0.3],
-            hovertemplate='Zoho: %{y:.1f} days<extra></extra>'
-        ))
-        
-        # Update layout
-        fig.update_layout(
-            title={
-                'text': "<b>Project Plan vs Zoho Utilization (2025)</b>",
-                'y': 0.95,
-                'x': 0.5,
-                'xanchor': 'center',
-                'yanchor': 'top',
-                'font': {'size': 18}
-            },
-            yaxis_title="Days",
-            barmode='group',
-            margin=dict(t=70, b=100, l=60, r=40),
-            height=450,  # Increased height
-            plot_bgcolor='rgb(248,249,250)',
-            paper_bgcolor='rgb(248,249,250)',
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="center",
-                x=0.5,
-                font=dict(size=14)
-            ),
-            yaxis=dict(
-                title_font=dict(size=14),
-                tickfont=dict(size=12),
-                gridcolor='rgba(0,0,0,0.1)'
-            ),
-            xaxis=dict(
-                tickfont=dict(size=14)
-            ),
-            bargap=0.15
-        )
-        
-        # Add annotation explaining the comparison
-        fig.add_annotation(
-            x=0,
-            y=-50,
-            text="<b>Project Plan</b>: Days utilized according to internal project planning<br><b>Zoho</b>: Days utilized according to Zoho time tracking",
-            showarrow=False,
-            font=dict(size=12),
-            align="center",
-            xanchor="center",
-            yanchor="top"
-        )
-    
-    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
 
 def create_milestone_by_type_chart(data):
     """Create stacked bar chart for milestone status by project type"""
@@ -602,5 +381,193 @@ def create_milestone_by_type_chart(data):
         font=dict(size=12),
         align="center"
     )
+    
+    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+def create_zoho_comparison_chart(data):
+    """Create comparison chart between Project Plan and Zoho utilization"""
+    # Check if we have both project plan and Zoho utilization data
+    if 'total_utilized' not in data or 'total_zoho_utilized' not in data:
+        return None
+    
+    # Create figure with subplots - one for overall, one for departments
+    if 'dept_comparison' in data and data['dept_comparison']:
+        # Get unique department names
+        dept_data = data['dept_comparison']
+        # Sort departments by project plan utilization
+        dept_data.sort(key=lambda x: x['project_plan'], reverse=True)
+        
+        # Create a horizontal bar chart for better readability
+        fig = go.Figure()
+        
+        # Add department data
+        dept_names = [dept['department'] for dept in dept_data]
+        
+        # Add Project Plan bars
+        fig.add_trace(go.Bar(
+            y=dept_names,
+            x=[dept['project_plan'] for dept in dept_data],
+            name='Project Plan',
+            marker_color='#4e73df',  # Strong blue
+            text=[f"{dept['project_plan']:.1f}" for dept in dept_data],
+            textposition='auto',
+            orientation='h',
+            hovertemplate='Department: %{y}<br>Project Plan: %{x:.1f} days<extra></extra>'
+        ))
+        
+        # Add Zoho bars
+        fig.add_trace(go.Bar(
+            y=dept_names,
+            x=[dept['zoho'] for dept in dept_data],
+            name='Zoho',
+            marker_color='#1cc88a',  # Strong green
+            text=[f"{dept['zoho']:.1f}" for dept in dept_data],
+            textposition='auto',
+            orientation='h',
+            hovertemplate='Department: %{y}<br>Zoho: %{x:.1f} days<extra></extra>'
+        ))
+        
+        # Add an "Overall" category at the top
+        fig.add_trace(go.Bar(
+            y=['Overall'],
+            x=[data.get('total_utilized', 0)],
+            name='Project Plan',
+            marker_color='#4e73df',
+            text=[f"{data.get('total_utilized', 0):.1f}"],
+            textposition='auto',
+            orientation='h',
+            showlegend=False,
+            hovertemplate='Overall Project Plan: %{x:.1f} days<extra></extra>'
+        ))
+        
+        fig.add_trace(go.Bar(
+            y=['Overall'],
+            x=[data.get('total_zoho_utilized', 0)],
+            name='Zoho',
+            marker_color='#1cc88a',
+            text=[f"{data.get('total_zoho_utilized', 0):.1f}"],
+            textposition='auto',
+            orientation='h',
+            showlegend=False,
+            hovertemplate='Overall Zoho: %{x:.1f} days<extra></extra>'
+        ))
+        
+        # Update layout for a horizontal bar chart - remove title
+        fig.update_layout(
+            xaxis_title="Days",
+            barmode='group',
+            margin=dict(t=20, b=50, l=180, r=40),  # Reduced top margin
+            height=500,  # Taller chart to accommodate all departments
+            plot_bgcolor='rgb(248,249,250)',
+            paper_bgcolor='rgb(248,249,250)',
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="center",
+                x=0.5,
+                font=dict(size=14)
+            ),
+            xaxis=dict(
+                title_font=dict(size=14),
+                tickfont=dict(size=12),
+                gridcolor='rgba(0,0,0,0.1)'
+            ),
+            yaxis=dict(
+                tickfont=dict(size=14)
+            )
+        )
+        
+        # Add a separator line between Overall and departments
+        fig.add_shape(
+            type="line",
+            x0=0,
+            y0=0.5,
+            x1=max(data.get('total_utilized', 0), data.get('total_zoho_utilized', 0)) * 1.1,
+            y1=0.5,
+            line=dict(
+                color="rgba(0,0,0,0.3)",
+                width=1,
+                dash="dash",
+            )
+        )
+        
+        # Add annotations explaining the comparison
+        fig.add_annotation(
+            x=max(data.get('total_utilized', 0), data.get('total_zoho_utilized', 0)) * 0.5,
+            y=-0.5,
+            text="<b>Project Plan</b>: Days utilized according to internal project planning<br><b>Zoho</b>: Days utilized according to Zoho time tracking",
+            showarrow=False,
+            font=dict(size=12),
+            align="center",
+            xanchor="center",
+            yanchor="top"
+        )
+        
+    else:
+        # If no department data, create a simpler bar chart
+        fig = go.Figure()
+        
+        # Add bars for overall comparison with better styling
+        fig.add_trace(go.Bar(
+            x=['Overall Utilization'],
+            y=[data.get('total_utilized', 0)],
+            name='Project Plan',
+            marker_color='#4e73df',
+            text=[f"{data.get('total_utilized', 0):.1f}"],
+            textposition='outside',
+            width=[0.3],
+            hovertemplate='Project Plan: %{y:.1f} days<extra></extra>'
+        ))
+        
+        fig.add_trace(go.Bar(
+            x=['Overall Utilization'],
+            y=[data.get('total_zoho_utilized', 0)],
+            name='Zoho',
+            marker_color='#1cc88a',
+            text=[f"{data.get('total_zoho_utilized', 0):.1f}"],
+            textposition='outside',
+            width=[0.3],
+            hovertemplate='Zoho: %{y:.1f} days<extra></extra>'
+        ))
+        
+        # Update layout - remove title
+        fig.update_layout(
+            yaxis_title="Days",
+            barmode='group',
+            margin=dict(t=20, b=100, l=60, r=40),  # Reduced top margin
+            height=450,
+            plot_bgcolor='rgb(248,249,250)',
+            paper_bgcolor='rgb(248,249,250)',
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="center",
+                x=0.5,
+                font=dict(size=14)
+            ),
+            yaxis=dict(
+                title_font=dict(size=14),
+                tickfont=dict(size=12),
+                gridcolor='rgba(0,0,0,0.1)'
+            ),
+            xaxis=dict(
+                tickfont=dict(size=14)
+            ),
+            bargap=0.15
+        )
+        
+        # Add annotation explaining the comparison
+        fig.add_annotation(
+            x=0,
+            y=-50,
+            text="<b>Project Plan</b>: Days utilized according to internal project planning<br><b>Zoho</b>: Days utilized according to Zoho time tracking",
+            showarrow=False,
+            font=dict(size=12),
+            align="center",
+            xanchor="center",
+            yanchor="top"
+        )
     
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)

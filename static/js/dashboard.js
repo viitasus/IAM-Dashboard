@@ -442,35 +442,44 @@ function exportTableToCSV(filename) {
     document.body.removeChild(link);
 }
 
-// Setup chart toolbar handlers
+// Enhanced toolbar handler function - add this to your dashboard.js file
 function setupChartToolbarHandlers() {
-    // Add custom class to Plotly modebar buttons for styling
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.addedNodes && mutation.addedNodes.length > 0) {
-                for (let i = 0; i < mutation.addedNodes.length; i++) {
-                    const node = mutation.addedNodes[i];
-                    if (node.classList && node.classList.contains('modebar')) {
-                        node.classList.add('custom-modebar');
-                        // Style individual buttons
-                        const buttons = node.querySelectorAll('.modebar-btn');
+    // Get all chart containers
+    const chartContainers = document.querySelectorAll('.chart-container');
+    
+    // Add event listeners for when Plotly adds the toolbars
+    chartContainers.forEach(container => {
+        // Use MutationObserver to detect when Plotly adds the modebar
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.addedNodes.length) {
+                    const modebar = container.querySelector('.modebar');
+                    if (modebar) {
+                        // Make sure the modebar is visible and positioned correctly
+                        modebar.style.opacity = '1';
+                        modebar.style.transform = 'none';
+                        
+                        // Add event listeners to buttons
+                        const buttons = modebar.querySelectorAll('a.modebar-btn');
                         buttons.forEach(button => {
-                            button.style.color = '#8b1d1d';
-                            button.addEventListener('mouseover', function() {
-                                this.style.color = '#a52525';
-                            });
-                            button.addEventListener('mouseout', function() {
-                                this.style.color = '#8b1d1d';
+                            button.addEventListener('click', function(e) {
+                                // Ensure the button action completes
+                                setTimeout(() => {
+                                    // If this is a download button, ensure the download happens
+                                    if (button.getAttribute('data-title') === 'Download plot as a png') {
+                                        console.log('Download button clicked');
+                                    }
+                                }, 100);
                             });
                         });
                     }
                 }
-            }
+            });
         });
+        
+        // Start observing
+        observer.observe(container, { childList: true, subtree: true });
     });
-    
-    // Start observing the document for added nodes
-    observer.observe(document.body, { childList: true, subtree: true });
 }
 
 // Add animation to chart containers
