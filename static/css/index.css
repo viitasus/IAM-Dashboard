@@ -24,6 +24,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 2rem 1rem;
+    background-image: url(/static/images/bg.png);
 }
 
 .upload-container {
