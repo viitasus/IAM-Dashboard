@@ -1,0 +1,142 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding-top: 20px;
+}
+
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.chart-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+.stat-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    padding: 20px;
+    text-align: center;
+    height: 100%;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.dashboard-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.active-status {
+    color: #28a745;
+}
+
+.hold-status {
+    color: #dc3545;
+}
+
+.completed-status {
+    color: #17a2b8;
+}
+
+.not-started-status {
+    color: #6c757d;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e3e6f0;
+    font-weight: bold;
+}
+
+.color-primary {
+    color: #4e73df;
+}
+
+.color-success {
+    color: #1cc88a;
+}
+
+.color-warning {
+    color: #f6c23e;
+}
+
+.color-danger {
+    color: #e74a3b;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+    .stat-value {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .dashboard-title {
+        font-size: 1.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-container {
+        padding: 10px;
+    }
+    
+    .chart-container {
+        padding: 10px;
+    }
+    
+    .stat-card {
+        padding: 15px;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+    }
+}
