@@ -2,6 +2,7 @@
 Chart generator module for Resource Billing Dashboard
 Creates Plotly visualizations based on processed data
 """
+from networkx import center
 import plotly
 import plotly.express as px
 import plotly.graph_objects as go
@@ -145,7 +146,7 @@ def create_milestone_status_chart(data):
 
 
 def create_resource_allocation_chart(data):
-    """Create bar chart comparing allocated, utilized and remaining days"""
+    """Create bar chart comparing allocated, utilized and remaining days with improved readability"""
     # Check if we have the necessary data
     if not all(k in data for k in ['total_allocated', 'total_utilized', 'total_remaining']):
         return None
@@ -160,64 +161,58 @@ def create_resource_allocation_chart(data):
     # Define colors with better contrast
     bar_colors = ['#8b1d1d', '#28a745', '#f6c23e']  # RNS primary, success, warning
     
+    # Format values with thousand separators
+    allocated_text = f"{allocated:,.1f}"
+    utilized_text = f"{utilized:,.1f}"
+    remaining_text = f"{remaining:,.1f}"
+    
     # Add bars with improved styling
     fig.add_trace(go.Bar(
         x=['Allocated', 'Utilized', 'Remaining'],
         y=[allocated, utilized, remaining],
         marker_color=bar_colors,
-        text=[f"{allocated:.1f}", f"{utilized:.1f}", f"{remaining:.1f}"],
+        text=[allocated_text, utilized_text, remaining_text],
         textposition='outside',
-        hovertemplate='%{x}: %{y:.1f} days<extra></extra>',
+        hovertemplate='<b>%{x}</b><br>%{y:,.1f} days<extra></extra>',
         width=[0.6, 0.6, 0.6]  # Slightly thinner bars
     ))
     
+    # Layout without middle title overlay
     fig.update_layout(
-        # Remove the title from the layout
-        margin=dict(t=20, b=60, l=80, r=40),  # Reduced top margin since no title
+        # Remove standard title since we'll handle it in HTML
+        title=None,
+        margin=dict(t=40, b=80, l=80, r=40),
         height=450,
         yaxis_title="Days",
         plot_bgcolor='rgb(248,249,250)',
         paper_bgcolor='rgb(248,249,250)',
         xaxis=dict(
-            title_font=dict(size=14),
-            tickfont=dict(size=14),
+            title_font=dict(size=16),
+            tickfont=dict(size=16),
             tickangle=0
         ),
         yaxis=dict(
-            title_font=dict(size=14),
-            tickfont=dict(size=12),
+            title_font=dict(size=16),
+            tickfont=dict(size=14),
             gridcolor='rgba(0,0,0,0.1)'
-        )
+        ),
+        showlegend=False
     )
     
-    # Add annotations with improved positioning
-    annotations = [
-        dict(
-            x="Allocated", 
-            y=allocated / 2,  # Position in the middle of the bar
-            text="Total days allocated<br>for all resources",
+    # Add value labels above the bars
+    for i, (x_val, y_val, text) in enumerate(zip(['Allocated', 'Utilized', 'Remaining'], 
+                                              [allocated, utilized, remaining],
+                                              [allocated_text, utilized_text, remaining_text])):
+        fig.add_annotation(
+            x=x_val,
+            y=y_val + max([allocated, utilized, remaining]) * 0.04,  # Position above the bar
+            text=f"<b>{text}</b>",
             showarrow=False,
-            font=dict(size=12, color="white")
-        ),
-        dict(
-            x="Utilized", 
-            y=utilized / 2,  # Position in the middle of the bar
-            text="Days utilized according<br>to project plan",
-            showarrow=False,
-            font=dict(size=12, color="white")
-        ),
-        dict(
-            x="Remaining", 
-            y=remaining / 2,  # Position in the middle of the bar
-            text="Days remaining<br>to be utilized",
-            showarrow=False,
-            font=dict(size=12, color="white")
+            font=dict(size=16, color=bar_colors[i])
         )
-    ]
     
-    fig.update_layout(annotations=annotations)
-    
-    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)  
+
 
 def create_utilization_gauge(data):
     """Create gauge chart for resource utilization rate"""
@@ -238,6 +233,7 @@ def create_utilization_gauge(data):
         title={
             'text': "Resource Utilization Rate (%)", 
             'font': {'size': 16}
+#            'align': 'center'
         },
         gauge={
             'axis': {

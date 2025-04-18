@@ -5,12 +5,11 @@ Main application entry point
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import os
 import json
-import traceback
 from werkzeug.utils import secure_filename
 from utils.data_processor import process_excel_data
 from utils.chart_generator import create_charts
 from werkzeug.exceptions import HTTPException
-
+import traceback
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -201,12 +200,14 @@ def delete_file(filename):
     
     return redirect(url_for('index'))
 
+
+# Error handlers to redirect to main page when any page fails to load
 @app.errorhandler(Exception)
 def handle_exception(e):
     """Handle all uncaught exceptions"""
     # Log the error and stacktrace
     print(f"Unhandled Exception: {str(e)}")
-    traceback.print_exception(*sys.exc_info())
+    traceback.print_exc()
     
     # Flash an error message to the user
     flash(f'An unexpected error occurred: {str(e)}', 'error')
@@ -229,7 +230,7 @@ def handle_http_exception(e):
 @app.errorhandler(404)
 def page_not_found(e):
     """Handle 404 errors"""
-    flash('Page not found', 'error')
+    flash('The page you requested was not found', 'error')
     return redirect(url_for('index'))
 
 @app.errorhandler(500)

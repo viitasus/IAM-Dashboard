@@ -16,8 +16,8 @@
 <body>
     <div class="dashboard-container">
         <div class="dashboard-header">
-            <div class="d-flex align-items-center">
-                <div class="logo-container">
+            <div>
+                <div class="logo-container text-center mb-3">
                     <img src="{{ url_for('static', filename='images/rns-logo.png') }}" alt="RNS Technology Services" height="60">
                 </div>
                 <div class="dashboard-title">
@@ -26,14 +26,11 @@
                 </div>
             </div>
             <div class="dashboard-actions">
-                <a href="{{ url_for('resources', filename=filename) }}" class="btn btn-outline-primary">
+                <a href="{{ url_for('resources', filename=filename) }}" class="btn btn-primary">
                     <i class="bi bi-people me-2"></i> View Resources
                 </a>
                 <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
                     <i class="bi bi-upload me-2"></i> Upload Another File
-                </a>
-                <a href="#" class="btn btn-outline-primary">
-                    <i class="bi bi-printer me-2"></i> Print Dashboard
                 </a>
                 <div class="theme-switch-wrapper">
                     <label class="theme-switch" for="theme-toggle">
@@ -55,30 +52,30 @@
         <div class="row mb-4">
             <div class="col-md-3 mb-4">
                 <div class="stat-card">
-                    <i class="bi bi-calendar-check"></i>
                     <div class="stat-label">Total Allocated Days (2025)</div>
                     <div class="stat-value color-primary">{{ data.total_allocated|round(1) }}</div>
+                    <i class="bi bi-calendar-check" style="font-size: 1.2rem; color: #8b1d1d;"></i>
                 </div>
             </div>
             <div class="col-md-3 mb-4">
                 <div class="stat-card">
-                    <i class="bi bi-calendar-date"></i>
                     <div class="stat-label">Utilized Days (2025)</div>
                     <div class="stat-value color-success">{{ data.total_utilized|round(1) }}</div>
+                    <i class="bi bi-calendar-date" style="font-size: 1.2rem; color: #28a745;"></i>
                 </div>
             </div>
             <div class="col-md-3 mb-4">
                 <div class="stat-card">
-                    <i class="bi bi-cloud-check"></i>
                     <div class="stat-label">Zoho Utilized Days</div>
                     <div class="stat-value color-info">{{ data.total_zoho_utilized|default(0)|round(1) }}</div>
+                    <i class="bi bi-cloud-check" style="font-size: 1.2rem; color: #17a2b8;"></i>
                 </div>
             </div>
             <div class="col-md-3 mb-4">
                 <div class="stat-card">
-                    <i class="bi bi-graph-up"></i>
                     <div class="stat-label">Utilization Rate</div>
                     <div class="stat-value color-danger">{{ data.utilization_rate|round(1) }}%</div>
+                    <i class="bi bi-graph-up" style="font-size: 1.2rem; color: #dc3545;"></i>
                 </div>
             </div>
         </div>
@@ -223,6 +220,7 @@
         </footer>
     </div>
 
+    <!-- Pass chart data to JavaScript -->
     <script>
         const chartData = {
             resource_allocation_chart: {{ charts.resource_allocation_chart | safe if charts.resource_allocation_chart else 'null' }},
@@ -232,9 +230,9 @@
             zoho_comparison_chart: {{ charts.zoho_comparison_chart | safe if charts.zoho_comparison_chart else 'null' }}
         };
     </script>
+    <!-- Bootstrap JS (needed for modal) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/enhanced-chart-styles.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </body>
 </html>

@@ -32,6 +32,7 @@ body {
     margin-bottom: 20px;
     padding: 20px;
     transition: all 0.3s ease;
+    
 }
 
 .chart-container:hover {
@@ -261,7 +262,7 @@ body {
 }
 
 .card-body {
-    padding: 1.5rem;
+    padding: 0.5rem;
 }
 
 /* Modal styles */
